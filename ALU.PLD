@@ -1,0 +1,108 @@
+Name     Name ;
+PartNo   00 ;
+Date     4/19/2017 ;
+Revision 01 ;
+Designer Engineer ;
+Company  Cooper Union ;
+Assembly None ;
+Location  ;
+Device   p22v10 ;
+
+/* *************** INPUT PINS *********************/
+PIN  1    =    A3                     ; /*       input for operand A       */ 
+PIN  2    =    A2                     ; /*       input for operand A       */ 
+PIN  3    =    A1                     ; /*       input for operand A       */ 
+PIN  4    =    A0                     ; /*       input for operand A       */ 
+PIN  5    =    B3                     ; /*       input for operand B       */ 
+PIN  6    =    B2                     ; /*       input for operand B       */  
+PIN  7    =    B1                     ; /*       input for operand B       */  
+PIN  8    =    B0                     ; /*       input for operand B       */ 
+PIN  9   =     M2                     ; /*       select operating mode     */ 
+PIN  10   =    M1                     ; /*       select operating mode     */
+PIN  11   =    M0                     ; /*       select operating mode     */ 
+PIN  13   =    Cin                    ; /*       carry in                  */ 
+PIN  14   =    OutEn                  ; /*       output enable          */ 
+  
+/* *************** OUTPUT PINS *********************/
+PIN  17   =    Y3                     ; /*      output result Y            */ 
+PIN  19   =    Y2                     ; /*      output result Y            */ 
+PIN  18   =    Y1                     ; /*      output result Y            */ 
+PIN  20   =    Y0                     ; /*      output result Y            */ 
+PIN  21   =    Cout                   ; /*      carryout output            */ 
+PIN  22   =    Z                      ; /*      zero-flag output           */ 
+PINNODE  15 = temp1;				 /* Temp SOP */
+PINNODE  16 = temp2;				 /* Temp SOP */
+PINNODE  23 = temp3;  				/* temp SOP */
+
+/* unused pins 15, 16, 23 */
+
+field outputs = [ Y3, Y2, Y1, Y0, Cout, Z];
+
+/* Logic */
+
+/*both from the addition side and the subtraction side */
+
+temp1 = (A0 & B0) # (Cin & (!M0 $(A0 $ B0)));
+
+		/*A0 & (B0 $ !M0) # Cin & (!M0 $ (A0 $ (!M0 $ B0)))*/
+		/*# M2 & M1 & !M0; */
+
+temp2 = (A1 & B1) # (temp1 & (!M0 $(A1 $ B1)));
+
+		/*A1 & (B1 $ !M0) # temp1 & (!M0 $ (A1 $ (!M0 $ B1))) */
+		/*# M2 & M1 & !M0*/
+
+temp3 = (A2 & B2) # (temp2 & (!M0 $(A2 $ B2)))
+		# (!A3 & M2 & !M1 & M0);
+/* not */
+/*A2 & (B2 $ !M0) # temp2 & (!M0 $ (A2 $ (!M0 $ B2)))*/
+		/*# M2 & M1 & !M0 */
+
+Y3 =  A3 & B3 & !M2 & !M1 & !M0 /* and */
+	# (A3 # B3) & !M2 & !M1 & M0 /* or */
+	# (A3 $ B3) & !M2 & M1 & !M0 /* xor */
+	# A2 & !M2 & M1 & M0 			/* shcl */
+	# Cin & M2 & !M1 & !M0 		/* shcr */
+	# M1 & M2 &((A3 $ (M0 $ B3)) $ (M1 & (M0 $ temp3)))
+	# M0 & temp3;
+
+Y2 =  A2 & B2 & !M2 & !M1 & !M0 	/* and */
+	# (A2 # B2) & !M2 & !M1 & M0		/* or */
+	# (A2 $ B2) & !M2 & M1 & !M0		/* xor */
+	# A1 & !M2 & M1 & M0 				/* shcl */
+	# A3 & M2 & !M1 & !M0 			/* shcr */
+	# !A2 & M2 & !M1 & M0				/* not */
+	# M1 & M2 &((A2 $ (M0 $ B2)) $ (M0 $ temp2));  
+
+Y1 = A1 & B1 & !M2 & !M1 & !M0 	/* and */
+	# (A1 # B1) & !M2 & !M1 & M0		/* or */
+	# (A1 $ B1) & !M2 & M1 & !M0		/* xor */
+	# A0 & !M2 & M1 & M0 				/* shcl */
+	# A2 & M2 & !M1 & !M0 				/* shcr */
+	# !A1 & M2 & !M1 & M0				/* not */
+	# M1 & M2 &((A1 $ (M0 $ B1)) $ (M0 $ temp1));
+
+
+Y0 =  A0 & B0 & !M2 & !M1 & !M0 /* and */
+	# (A0 # B0) & !M2 & !M1 & M0	/* or */
+	# (A0 $ B0) & !M2 & M1 & !M0	/* xor */
+	# Cin & !M2 & M1 & M0 			/* schl */
+	# A1 & M2 & !M1 & !M0 			/* shcr */
+	# !A0 & M2 & !M1 & M0			/* not */
+	# M1 & M2 & ((A0 $ (M0 $ B0)) $ (M0 # Cin) )	;/* if M0 is zero, pass Cin, if M0 is one, then Cin is one*/
+	
+
+Cout=  !M2 & !M1 & !M0 & Cin 	/* 000 */
+	# !M2 & !M1 & M0 & Cin		/* 001 */
+	# !M2 & M1 & !M0 & Cin		/* 010 */
+	# !M2 & M1 & M0 & A3		/* 011 */
+	# M2 & !M1 & !M0 & A0 		/* 100 */
+	# M2 & !M1 & M0 & Cin		/* 101 */
+	# M2 & M1 & !M0 & ((B3 $ !M0) $ A3) & Cin /* 110 */
+ 	# M2 & M1 & M0 & ((A3 & B3) # (temp3 & (!M0 $(A3 $ B3))));
+
+Z = 	!Y3 & !Y2 & !Y1 & !Y0;
+outputs.OE= OutEn;
+
+
+	
