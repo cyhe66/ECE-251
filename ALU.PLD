@@ -89,7 +89,7 @@ Cout=  !M2 & !M1 & !M0 & Cin 	/* 000 */
  	# M2 & M1 & ((B3 & (!M0 $ A3) # (temp3 	& 	(B3 $ (!M0 $ A3)))));
 
 Z = 	!Y3 & !Y2 & !Y1 & !Y0;
-outputs.OE= OutEn;
+outputs.OE= !OutEn;
 
 
 	
