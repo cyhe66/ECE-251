@@ -72,7 +72,7 @@ Y1 = A1 & B1 & !M2 & !M1 & !M0 	/* and */
 	# M1 & M2 & (B1 $ (A1 $ !M0) $ (temp1 $ !M0));
 
 
-Y0 =  A0 & B0 & !M2 & !M1 & !M0 /* and */
+Y0 =  A0 & B0 & !M2 & !M1 & !M0 /* and *
 	# (A0 # B0) & !M2 & !M1 & M0	/* or */
 	# (A0 $ B0) & !M2 & M1 & !M0	/* xor */
 	# Cin & !M2 & M1 & M0 			/* schl */
@@ -89,7 +89,7 @@ Cout=  !M2 & !M1 & !M0 & Cin 	/* 000 */
  	# M2 & M1 & ((B3 & (!M0 $ A3) # (temp3 	& 	(B3 $ (!M0 $ A3)))));
 
 Z = 	!Y3 & !Y2 & !Y1 & !Y0;
-outputs.OE= OutEn;
+outputs.OE= !OutEn;
 
 
 	
