@@ -41,31 +41,28 @@ VAR_K	EQU	0x23
 	ORG 0x10
 start
 	bsf	STATUS, RP0	; switch to Bank 1
-	movlw	0x10	; Set the PortC pins
-	movwf	TRISC	; bit 2-7 to output, bit 0 & 1 to input 
+	movlw	0x00	; Set the PortC pins
+	movwf	TRISC	; bit set all to output
+	movlw	0x03	; Set the PortB  pins
+	movwf	TRISB	; bit set RB0, RB1 to input
 	bcf	STATUS, RP0	; switch back to Bank 0
 
 
 	clrf	COUNT	; Set COUNT to 0
 
 
-
 L1	movf	COUNT, W	; Get value of COUNT
 	movwf	PORTC		; and write it to PORTC
-	
-	
-	BTFSS	PORTC, 0			;Get value of PortA, BIT 0
-		BTFSC	PORTC, 1;
-			incf	COUNT, F	; Add extra one to COUNT
-								; do not increment if BIT 0 input is zero.
-		incf	COUNT, F		; Add one to COUNT
+	BTFSC	PORTB, 0			;Get value of PortB, BIT 0
+		incf	COUNT, F		; Add extra one to COUNT
+	incf	COUNT, F		; Add one to COUNT
 	call	DELAY;
+L2	BTFSC	PORTB, 1
+		goto L3
 	goto	L1					; Repeat
 
-;**** Check if the switch is closed
-		
-
-
+L3	nop
+	goto L2 
 ;clock speed is 4MHz provided by crystal oscillator
 ;each instruction line takes 1/1000th of a millisecond
 ;1000 instruction lines takes up a millisecond
@@ -88,7 +85,5 @@ Loop1
 		goto Loop		; 1000th instruction line
 return					; 1000th instruction line when VAR_I is zero
 
-
- 
 
 END
